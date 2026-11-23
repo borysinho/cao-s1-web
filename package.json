@@ -11,7 +11,8 @@
     "start": "node nginx/start.ts",
     "check:nginx": "node nginx/start.ts --check",
     "typecheck": "tsc -p tsconfig.json && tsc -p tsconfig.tools.json",
-    "test": "node --test tests/*.test.ts"
+    "test": "node --test tests/*.test.ts",
+    "package": "npm run build && node scripts/package.ts"
   },
   "dependencies": {
     "react": "^19.3.1",

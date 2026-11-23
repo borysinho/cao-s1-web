@@ -15,6 +15,7 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  # Cada job utiliza su propio runner
   verificar:
     name: Verificar
     runs-on: ubuntu-24.04

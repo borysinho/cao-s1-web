@@ -1,5 +1,4 @@
 name: CI y artefacto
-
 on:
   push:
     branches: [development, main]
@@ -15,7 +14,6 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  # Cada job utiliza su propio runner
   verificar:
     name: Verificar
     runs-on: ubuntu-24.04
@@ -38,6 +36,7 @@ jobs:
       - name: Ejecutar pruebas independientes
         run: npm test
 
+  # Stage 2: Empaquetar el código y generar artefactos
   empaquetar:
     name: Empaquetar
     needs: verificar

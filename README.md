@@ -59,6 +59,8 @@ El pipeline verifica y empaqueta cambios en `development` y `main`. El despliegu
 
 ## GitHub Actions y artefacto publicable
 
+El workflow tiene dos jobs: **Verificar** instala las dependencias de desarrollo y ejecuta TypeScript y las pruebas; **Empaquetar** declara `needs: verificar`, por lo que solo comienza cuando el primero termina correctamente. Empaquetar obtiene el mismo código, prepara Node y sus dependencias en un runner nuevo, genera el paquete y lo guarda como artefacto. Si Verificar falla o se cancela, Empaquetar no continúa. Los jobs no comparten node_modules ni archivos locales; cada uno prepara su entorno.
+
 El workflow `.github/workflows/ci.yml` se ejecuta con push y pull requests hacia `development` o `main`, y permite ejecución manual cuando el workflow esté disponible en la rama predeterminada. Instala con `npm ci`, verifica TypeScript, ejecuta pruebas independientes y genera el artefacto con `npm run package`. No necesita otros repositorios, secretos, PostgreSQL ni Mailpit para esta verificación; no realiza despliegues.
 
 En **GitHub → Actions → ejecución exitosa → Artifacts** descarga el paquete identificado con el commit. Se conserva 14 días y contiene un `.tar.gz` y su checksum `.sha256`. Extrae el ZIP de descarga, verifica `sha256sum -c ARCHIVO.tar.gz.sha256` y descomprime el tar. Dentro encontrarás `PUBLICAR.md` y `release.json` con el commit, rama, versión de Node y plataforma. También puedes generar el paquete localmente mediante `npm run package`; en Linux requiere `tar`.
@@ -66,3 +68,11 @@ En **GitHub → Actions → ejecución exitosa → Artifacts** descarga el paque
 Los backends incluyen código TypeScript para Node.js 24, contratos, migraciones cuando corresponden y node_modules de producción instalados desde el lockfile. Web incluye `dist/` compilado y su launcher de Nginx. No incluye `.env` real, bases, PDF de usuarios, imágenes subidas, pruebas ni dependencias de desarrollo. Las fotografías públicas de demostración sí forman parte de web.
 
 El artefacto de Actions se prepara en **Ubuntu 24.04 x64** para la versión exacta de `.nvmrc`. El destino requiere ese Node.js y un entorno compatible; web además requiere Nginx y los backends sus dependencias de infraestructura configuradas por entorno. No hace falta instalar paquetes npm ni compilar en destino. Conserva la persistencia fuera de la entrega y aplica las migraciones del servicio antes de arrancarlo.
+
+## Dependencias de desarrollo y editor
+
+Dentro de este repositorio ejecuta `npm ci --include=dev`: instala también TypeScript y los tipos `@types/node` ya declarados en package.json. No ejecutes npm install desde la carpeta que agrupa los ocho clones, porque no es un proyecto npm. La instalación con `--omit=dev` corresponde al artefacto de producción, no a editar el código fuente.
+
+En VS Code abre la carpeta de este servicio, ejecuta **TypeScript: Select TypeScript Version → Use Workspace Version** y, si conservaba diagnósticos antiguos, **TypeScript: Restart TS Server**. `.vscode/settings.json` señala el TypeScript instalado en este proyecto. Comprueba los errores reales con `npm run typecheck`; `npm test` comprueba sus pruebas.
+
+Las carpetas scripts, nginx y tests tienen su propio tsconfig.json, que extiende tsconfig.tools.json. Así el editor reconoce automáticamente esos proyectos Node, conservando la configuración React de src.
